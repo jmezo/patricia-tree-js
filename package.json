@@ -43,5 +43,8 @@
   "lint-staged": {
     "*.ts": "eslint --fix --max-warnings 0",
     "*.{js,ts,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "level": "^7.0.1"
   }
 }

@@ -1,6 +1,7 @@
 /build
 /node_modules
 /coverage
+/.db_data
 
 .env
 yarn-error.log

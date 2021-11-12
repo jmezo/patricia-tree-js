@@ -47,6 +47,9 @@
     "dotenv": "^10.0.0",
     "ethereumjs-util": "^7.1.3",
     "ethers": "^5.5.1",
-    "level": "^7.0.1"
+    "level": "^7.0.1",
+    "leveldown": "^6.1.0",
+    "levelup": "^5.1.1",
+    "merkle-patricia-tree": "^4.2.2"
   }
 }

@@ -1,12 +1,5 @@
 import level from "level";
-import {
-  Account,
-  AccountData,
-  BN,
-  bufferToHex,
-  rlp,
-  sha256,
-} from "ethereumjs-util";
+import { rlp } from "ethereumjs-util";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
 
 const stateRoot =

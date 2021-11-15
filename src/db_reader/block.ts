@@ -1,7 +1,7 @@
 import { LevelUp } from "levelup";
 import { rlp } from "ethereumjs-util";
 
-type BlockHeader = {
+export type BlockHeader = {
   parentHash: string;
   uncleHash: string;
   coinbase: string;
@@ -20,39 +20,60 @@ type BlockHeader = {
   baseFeePerGas: string;
 };
 
-type RootHashes = {
+export type RootHashes = {
   stateRoot: Buffer;
   txSha: Buffer;
   receiptSha: Buffer;
 };
 
+export const getLatestBlockNumber = async (db: LevelUp): Promise<bigint> => {
+  const [latestBlockNum] = await _getLatestBlockNumberAndHash(db);
+  return latestBlockNum.readBigUInt64BE();
+};
+
 export const getBlockHeader = async (
-  blockNum: number,
-  db: LevelUp
+  db: LevelUp,
+  blockNum: number | undefined = undefined
 ): Promise<BlockHeader> => {
-  const hexBlockNum = getBlockNumInHex(blockNum);
-  const keyForBlockHash = getKeyForBlockHash(hexBlockNum);
-  console.log("keyForBlockHash", keyForBlockHash);
-  const blockHash = await db.get(keyForBlockHash);
-  console.log("blockHash", blockHash);
-  const keyForHeader = getKeyForHeader(hexBlockNum, blockHash as Buffer);
-  console.log("keyForHeader", keyForHeader);
-  const encodedHeader = await db.get(keyForHeader);
+  const encodedHeader = await _getEncodedBlockHeader(blockNum, db);
   const decoded = decodeBlockHeader(encodedHeader as Buffer);
   return decoded;
 };
 
 export const getRootHashes = async (
-  blockNum: number,
-  db: LevelUp
+  db: LevelUp,
+  blockNum: number | undefined = undefined
 ): Promise<RootHashes> => {
-  const hexBlockNum = getBlockNumInHex(blockNum);
-  const keyForBlockHash = getKeyForBlockHash(hexBlockNum);
-  const blockHash = await db.get(keyForBlockHash);
-  const keyForHeader = getKeyForHeader(hexBlockNum, blockHash as Buffer);
-  const encodedHeader = await db.get(keyForHeader);
+  const encodedHeader = await _getEncodedBlockHeader(blockNum, db);
   const decoded = rlp.decode(encodedHeader) as unknown as Buffer[];
   return { stateRoot: decoded[3], txSha: decoded[4], receiptSha: decoded[5] };
+};
+
+const _getLatestBlockNumberAndHash = async (
+  db: LevelUp
+): Promise<[Buffer, Buffer]> => {
+  const latestHeaderHash = (await db.get(Buffer.from("LastHeader"))) as Buffer;
+  const latestBlockNumKey = Buffer.concat([Buffer.from("H"), latestHeaderHash]);
+  const latestBlockNum = (await db.get(latestBlockNumKey)) as Buffer;
+  return [latestBlockNum, latestHeaderHash];
+};
+
+const _getEncodedBlockHeader = async (
+  blockNum: number | undefined,
+  db: LevelUp
+): Promise<Buffer> => {
+  let hexBlockNum, blockHash;
+  if (blockNum === undefined) {
+    const [latestBlockNum, latestHash] = await _getLatestBlockNumberAndHash(db);
+    hexBlockNum = latestBlockNum;
+    blockHash = latestHash;
+  } else {
+    hexBlockNum = getBlockNumInHex(blockNum);
+    const keyForBlockHash = getKeyForBlockHash(hexBlockNum);
+    blockHash = await db.get(keyForBlockHash);
+  }
+  const keyForHeader = getKeyForHeader(hexBlockNum, blockHash as Buffer);
+  return db.get(keyForHeader);
 };
 
 const getBlockNumInHex = (blockNumber: number): Buffer => {

@@ -3,13 +3,12 @@ import leveldown = require("leveldown");
 import { ethers, utils } from "ethers";
 import { rlp } from "ethereumjs-util";
 import { SecureTrie as Trie } from "merkle-patricia-tree";
-import dotenv from "dotenv";
+import env from "./utils/env";
 
-dotenv.config();
 // const db = levelup(leveldown("./.ethereum/geth/lightchaindata"));
 // const db = levelup(leveldown("./.ethereum/geth/chaindata"));
-const db = levelup(leveldown("./.leveldb/.devethereum/geth/chaindata"));
-const provider = new ethers.providers.JsonRpcProvider(process.env.NODE_URL);
+const db = levelup(leveldown(env.LEVELDB_PATH));
+const provider = new ethers.providers.JsonRpcProvider(env.NODE_URL);
 // const provider = new ethers.providers.IpcProvider("../.ethereum/geth.ipc");
 
 const main = async () => {

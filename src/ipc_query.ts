@@ -1,9 +1,8 @@
 import { ethers } from "ethers";
+import env from "./utils/env";
 
 const main = async () => {
-  const provider = new ethers.providers.IpcProvider(
-    "./.leveldb/.devethereum/geth.ipc"
-  );
+  const provider = new ethers.providers.IpcProvider(env.IPC_PATH);
   // const block = await provider.getBlockWithTransactions("latest");
   // console.log(block);
   // console.log(block.transactions[0].value.toString())
